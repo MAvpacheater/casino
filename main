@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Casino</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .grid-cell {
+      width: 48px;
+      height: 48px;
+    }
+    .slot-symbol {
+      font-size: 2rem;
+      animation: spin 0.5s ease-in-out;
+    }
+    @keyframes spin {
+      0% { transform: translateY(-20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white p-4">
+  <div class="max-w-xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-4">Mini Casino</h1><!-- Balance -->
+<div class="text-center mb-4">
+  Balance: <span id="balance">1000</span> mCoin
+</div>
+
+<!-- Navigation -->
+<div class="flex justify-around mb-6">
+  <button onclick="showPage('mines')" class="bg-blue-600 px-4 py-2 rounded">Mines</button>
+  <button onclick="showPage('guess')" class="bg-green-600 px-4 py-2 rounded">Guess</button>
+  <button onclick="showPage('slots')" class="bg-yellow-600 px-4 py-2 rounded">Slots</button>
+</div>
+
+<!-- Mines Game -->
+<div id="mines" class="hidden">
+  <div class="grid grid-cols-5 gap-2 mb-2">
+    <!-- 25 cells -->
+    <button class="bg-blue-500 grid-cell" onclick="clickMine(this)">?</button>
+    <!-- Repeat 24 more times -->
+  </div>
+  <button onclick="resetMines()" class="bg-red-600 px-4 py-2 rounded">Reset</button>
+</div>
+
+<!-- Guess Number Game -->
+<div id="guess" class="hidden">
+  <p class="mb-2">Guess a number from 1 to 5 (10 mCoin)</p>
+  <input id="guessInput" type="number" min="1" max="5" class="text-black p-1 mb-2" />
+  <button onclick="playGuess()" class="bg-green-600 px-4 py-2 rounded">Play</button>
+  <p id="guessResult"></p>
+</div>
+
+<!-- Slot Machine -->
+<div id="slots" class="hidden text-center">
+  <div class="flex justify-center space-x-4 mb-4">
+    <div class="slot-symbol" id="slot1">?</div>
+    <div class="slot-symbol" id="slot2">?</div>
+    <div class="slot-symbol" id="slot3">?</div>
+  </div>
+  <button onclick="playSlots()" class="bg-yellow-500 px-4 py-2 rounded">Spin (20 mCoin)</button>
+  <p id="slotResult"></p>
+</div>
+
+  </div>  <script>
+    let balance = 1000;
+
+    function updateBalance() {
+      document.getElementById('balance').innerText = balance;
+    }
+
+    function showPage(page) {
+      document.getElementById('mines').classList.add('hidden');
+      document.getElementById('guess').classList.add('hidden');
+      document.getElementById('slots').classList.add('hidden');
+      document.getElementById(page).classList.remove('hidden');
+    }
+
+    // Guess number
+    function playGuess() {
+      const input = document.getElementById('guessInput');
+      const guess = parseInt(input.value);
+      if (balance < 10 || guess < 1 || guess > 5) return;
+      balance -= 10;
+      const result = Math.floor(Math.random() * 5) + 1;
+      const won = (guess === result);
+      if (won) balance += 50;
+      document.getElementById('guessResult').innerText = won ? 'You won 50 mCoin!' : `Wrong! It was ${result}`;
+      updateBalance();
+    }
+
+    // Slot Machine
+    function playSlots() {
+      if (balance < 20) return;
+      balance -= 20;
+      const symbols = ['7', '★', '♦'];
+      const result = [0, 0, 0].map(() => symbols[Math.floor(Math.random() * symbols.length)]);
+      result.forEach((s, i) => document.getElementById(`slot${i+1}`).innerText = s);
+      const win = result.every(s => s === result[0]);
+      if (win) {
+        balance += 100;
+        document.getElementById('slotResult').innerText = 'Jackpot! +100 mCoin';
+      } else {
+        document.getElementById('slotResult').innerText = 'Try again...';
+      }
+      updateBalance();
+    }
+
+    // Mines (simple random reveal)
+    function clickMine(btn) {
+      if (btn.disabled || balance < 5) return;
+      btn.disabled = true;
+      const isBomb = Math.random() < 0.2;
+      if (isBomb) {
+        btn.innerText = '💣';
+        balance -= 5;
+      } else {
+        btn.innerText = '💎';
+        balance += 3;
+      }
+      updateBalance();
+    }
+
+    function resetMines() {
+      document.querySelectorAll('#mines button').forEach(btn => {
+        btn.innerText = '?';
+        btn.disabled = false;
+      });
+    }
+  </script></body>
+</html>
